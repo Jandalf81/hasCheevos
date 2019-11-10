@@ -1,7 +1,7 @@
 ﻿Public Class Game
     Private _Name As String
     Private _ID As Integer
-    Private _HasCheevos As Boolean
+    Private _HasCheevos As Boolean ' doesn't seem to be correct... GB ID 537 has TRUE, but there's no hash value attached
     Private _Hashes As New List(Of String)
 
     Public Property Name As String

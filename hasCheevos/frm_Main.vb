@@ -1,7 +1,8 @@
 ﻿Public Class frm_Main
     Private ConsoleList As New List(Of Console)
 
-    Dim tempDir As String = My.Application.Info.DirectoryPath & "\tmp"
+    Dim metaDir As String = My.Application.Info.DirectoryPath & "\meta"
+    Dim tempDir As String = My.Application.Info.DirectoryPath & "\temp"
     Dim siteURL As String = "https://retroachievements.org"
     Dim githubURL As String = "https://raw.githubusercontent.com/meleu/hascheevos/master/data"
 
@@ -34,22 +35,28 @@
         End With
     End Sub
 
-    Private Sub refreshMetadata(Console As Console)
+    Private Sub prepareDirectories()
+        If (My.Computer.FileSystem.DirectoryExists(metaDir) = False) Then
+            My.Computer.FileSystem.CreateDirectory(metaDir)
+        End If
+
         If (My.Computer.FileSystem.DirectoryExists(tempDir) = False) Then
             My.Computer.FileSystem.CreateDirectory(tempDir)
         End If
+    End Sub
 
+    Private Sub refreshMetadata(Console As Console)
         log("Refreshing metadata files for " & Console.Name)
 
         log("getting hashfile...")
-        If (download(siteURL & "/dorequest.php?r=hashlibrary&c=" & Console.Index, tempDir & "\" & Console.ShortName & ".json") = 0) Then
+        If (download(siteURL & "/dorequest.php?r=hashlibrary&c=" & Console.Index, metaDir & "\" & Console.ShortName & ".json") = 0) Then
             log("got hashfile")
         Else
             log("error while getting hashfile")
         End If
 
         log("getting gamelist...")
-        If (download(githubURL & "/" & Console.ShortName & "_hascheevos.txt", tempDir & "\" & Console.ShortName & ".txt") = 0) Then
+        If (download(githubURL & "/" & Console.ShortName & "_hascheevos.txt", metaDir & "\" & Console.ShortName & ".txt") = 0) Then
             log("got gamelist")
         Else
             log("error while getting gamelist")
@@ -58,7 +65,7 @@
 
     Private Sub scanROMFiles(PathToCheck As String, Console As Console)
         log("reading gamelist...")
-        Console.readGamelist(tempDir)
+        Console.readGamelist(metaDir)
         log("found " & Console.Gamelist.Count & " games")
     End Sub
 
