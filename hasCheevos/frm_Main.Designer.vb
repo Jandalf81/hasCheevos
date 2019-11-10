@@ -29,6 +29,8 @@ Partial Class frm_Main
         Me.cmb_System = New System.Windows.Forms.ComboBox()
         Me.btn_ScanNow = New System.Windows.Forms.Button()
         Me.txt_Log = New System.Windows.Forms.TextBox()
+        Me.chk_RefreshMetadata = New System.Windows.Forms.CheckBox()
+        Me.Button1 = New System.Windows.Forms.Button()
         Me.SuspendLayout()
         '
         'lbl_PathToCheck
@@ -47,13 +49,13 @@ Partial Class frm_Main
         Me.txt_PathToCheck.Location = New System.Drawing.Point(167, 6)
         Me.txt_PathToCheck.Name = "txt_PathToCheck"
         Me.txt_PathToCheck.ReadOnly = True
-        Me.txt_PathToCheck.Size = New System.Drawing.Size(247, 20)
+        Me.txt_PathToCheck.Size = New System.Drawing.Size(464, 20)
         Me.txt_PathToCheck.TabIndex = 1
         '
         'btnPathToCheck
         '
         Me.btnPathToCheck.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.btnPathToCheck.Location = New System.Drawing.Point(420, 4)
+        Me.btnPathToCheck.Location = New System.Drawing.Point(637, 4)
         Me.btnPathToCheck.Name = "btnPathToCheck"
         Me.btnPathToCheck.Size = New System.Drawing.Size(88, 23)
         Me.btnPathToCheck.TabIndex = 2
@@ -77,16 +79,16 @@ Partial Class frm_Main
         Me.cmb_System.FormattingEnabled = True
         Me.cmb_System.Location = New System.Drawing.Point(167, 36)
         Me.cmb_System.Name = "cmb_System"
-        Me.cmb_System.Size = New System.Drawing.Size(341, 21)
+        Me.cmb_System.Size = New System.Drawing.Size(558, 21)
         Me.cmb_System.TabIndex = 4
         '
         'btn_ScanNow
         '
         Me.btn_ScanNow.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.btn_ScanNow.Location = New System.Drawing.Point(12, 89)
+        Me.btn_ScanNow.Location = New System.Drawing.Point(12, 229)
         Me.btn_ScanNow.Name = "btn_ScanNow"
-        Me.btn_ScanNow.Size = New System.Drawing.Size(496, 46)
+        Me.btn_ScanNow.Size = New System.Drawing.Size(713, 46)
         Me.btn_ScanNow.TabIndex = 5
         Me.btn_ScanNow.Text = "Scan now!"
         Me.btn_ScanNow.UseVisualStyleBackColor = True
@@ -96,17 +98,41 @@ Partial Class frm_Main
         Me.txt_Log.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
             Or System.Windows.Forms.AnchorStyles.Left) _
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.txt_Log.Location = New System.Drawing.Point(12, 141)
+        Me.txt_Log.Location = New System.Drawing.Point(12, 281)
         Me.txt_Log.Multiline = True
         Me.txt_Log.Name = "txt_Log"
-        Me.txt_Log.Size = New System.Drawing.Size(496, 232)
+        Me.txt_Log.ReadOnly = True
+        Me.txt_Log.ScrollBars = System.Windows.Forms.ScrollBars.Both
+        Me.txt_Log.Size = New System.Drawing.Size(713, 275)
         Me.txt_Log.TabIndex = 6
+        Me.txt_Log.WordWrap = False
+        '
+        'chk_RefreshMetadata
+        '
+        Me.chk_RefreshMetadata.AutoSize = True
+        Me.chk_RefreshMetadata.Location = New System.Drawing.Point(167, 63)
+        Me.chk_RefreshMetadata.Name = "chk_RefreshMetadata"
+        Me.chk_RefreshMetadata.Size = New System.Drawing.Size(106, 17)
+        Me.chk_RefreshMetadata.TabIndex = 7
+        Me.chk_RefreshMetadata.Text = "refresh Metadata"
+        Me.chk_RefreshMetadata.UseVisualStyleBackColor = True
+        '
+        'Button1
+        '
+        Me.Button1.Location = New System.Drawing.Point(650, 200)
+        Me.Button1.Name = "Button1"
+        Me.Button1.Size = New System.Drawing.Size(75, 23)
+        Me.Button1.TabIndex = 8
+        Me.Button1.Text = "Button1"
+        Me.Button1.UseVisualStyleBackColor = True
         '
         'frm_Main
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(520, 385)
+        Me.ClientSize = New System.Drawing.Size(737, 568)
+        Me.Controls.Add(Me.Button1)
+        Me.Controls.Add(Me.chk_RefreshMetadata)
         Me.Controls.Add(Me.txt_Log)
         Me.Controls.Add(Me.btn_ScanNow)
         Me.Controls.Add(Me.cmb_System)
@@ -128,4 +154,6 @@ Partial Class frm_Main
     Friend WithEvents cmb_System As ComboBox
     Friend WithEvents btn_ScanNow As Button
     Friend WithEvents txt_Log As TextBox
+    Friend WithEvents chk_RefreshMetadata As CheckBox
+    Friend WithEvents Button1 As Button
 End Class

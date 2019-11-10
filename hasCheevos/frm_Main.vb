@@ -1,4 +1,6 @@
-﻿Public Class frm_Main
+﻿Imports System.ComponentModel
+
+Public Class frm_Main
     Private SystemList As New List(Of VGSystem)
     Private selectedSystem As VGSystem
 
@@ -16,6 +18,11 @@
         initSystemList()
         cmb_System.DisplayMember = "Name"
         cmb_System.DataSource = SystemList
+    End Sub
+
+    Private Sub frm_Main_Closing(sender As Object, e As CancelEventArgs) Handles Me.Closing
+        ' remove temporary files
+        tidyUp(tempDir)
     End Sub
 
 #Region "GUI elements"
@@ -36,18 +43,29 @@
     End Sub
 
     Private Sub btn_ScanNow_Click(sender As Object, e As EventArgs) Handles btn_ScanNow.Click
-        selectedSystem.refreshMetadata(siteURL, githubURL, metaDir)
+        If (chk_RefreshMetadata.CheckState = CheckState.Checked) Then
+            ' TODO getMetadata() first, clearMetadata() only when no error, then move metadata
+            selectedSystem.clearMetadata(metaDir)
+            selectedSystem.getMetadata(siteURL, githubURL, metaDir)
+        Else
+            If (selectedSystem.hasMetadata(metaDir) = False) Then
+                selectedSystem.getMetadata(siteURL, githubURL, metaDir)
+            End If
+        End If
+
         selectedSystem.readMetadata(metaDir)
+
+        selectedSystem.checkFilesForCheevos(txt_PathToCheck.Text, tempDir)
     End Sub
 #End Region
 
 #Region "Functions"
     Private Sub initSystemList()
         With SystemList
-            .Add(New VGSystem("Sega Mega Drive", "megadrive", 1, {"md"}))
-            .Add(New VGSystem("Nintendo N64", "n64", 2, {"n64", "v64"}))
-            .Add(New VGSystem("Nintendo SuperNES", "snes", 3, {"sfc", "smc"}))
-            .Add(New VGSystem("Nintendo GameBoy", "gb", 4, {"gb"}))
+            .Add(New VGSystem("Sega Mega Drive", "megadrive", 1, {"*.md"}))
+            .Add(New VGSystem("Nintendo N64", "n64", 2, {"*.n64", "*.v64"}))
+            .Add(New VGSystem("Nintendo SuperNES", "snes", 3, {"*.sfc", "*.smc"}))
+            .Add(New VGSystem("Nintendo GameBoy", "gb", 4, {"*.gb"}))
         End With
     End Sub
 
@@ -59,6 +77,12 @@
         If (My.Computer.FileSystem.DirectoryExists(tempDir) = False) Then
             My.Computer.FileSystem.CreateDirectory(tempDir)
         End If
+    End Sub
+
+    ' TODO remove this
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+        txt_Log.Clear()
+        txt_PathToCheck.Text = "E:\www.github.com\hasCheevos\hasCheevos\ROMs\megadrive"
     End Sub
 #End Region
 End Class

@@ -5,6 +5,9 @@
     Private _Extensionlist As String()
     Private _Gamelist As New List(Of Game)
 
+    Public GamesWithCheevos As New List(Of String)
+    Public GamesWithoutCheevos As New List(Of String)
+
     Public Property Name As String
         Get
             Return _Name
@@ -53,23 +56,58 @@
         Me.Extensionlist = extensionList
     End Sub
 
-    Public Function refreshMetadata(siteURL As String, githubURL As String, metaDir As String) As Integer
-        log("Refreshing metadata files for " & Me.Name)
+    Public Function hasMetadata(metaDir As String) As Boolean
+        log("Checking metadata files for " & Me.Name & "...")
 
-        log("getting hashfile...")
+        If (My.Computer.FileSystem.FileExists(metaDir & "\" & Me.ShortName & ".json") AndAlso My.Computer.FileSystem.FileExists(metaDir & "\" & Me.ShortName & ".txt")) Then
+            log(vbTab & "OK, metadata files found")
+
+            Return True
+        End If
+
+        log(vbTab & "ERROR, metadata file(s) missing")
+        Return False
+    End Function
+
+    Public Function clearMetadata(metaDir As String) As Integer
+        log("Clearing old metadata files for " & Me.Name & "...")
+
+        Try
+            If (My.Computer.FileSystem.FileExists(metaDir & "\" & Me.ShortName & ".json")) Then
+                My.Computer.FileSystem.DeleteFile(metaDir & "\" & Me.ShortName & ".json")
+            End If
+
+            If (My.Computer.FileSystem.FileExists(metaDir & "\" & Me.ShortName & ".txt")) Then
+                My.Computer.FileSystem.DeleteFile(metaDir & "\" & Me.ShortName & ".txt")
+            End If
+
+            log(vbTab & "OK, cleared metadata files")
+
+            Return 0
+        Catch ex As Exception
+            log(vbTab & "ERROR, could not clear old metadata files")
+
+            Return -1
+        End Try
+    End Function
+
+    Public Function getMetadata(siteURL As String, githubURL As String, metaDir As String) As Integer
+        log("Getting metadata files for " & Me.Name & "...")
+
+        log(vbTab & "getting hashfile...")
         If (download(siteURL & "/dorequest.php?r=hashlibrary&c=" & Me.Index, metaDir & "\" & Me.ShortName & ".json") = 0) Then
-            log("OK, got hashfile")
+            log(vbTab & vbTab & "OK, got hashfile")
         Else
-            log("ERROR while getting hashfile")
+            log(vbTab & vbTab & "ERROR while getting hashfile")
 
             Return -1
         End If
 
-        log("getting gamelist...")
+        log(vbTab & "getting gamelist...")
         If (download(githubURL & "/" & Me.ShortName & "_hascheevos.txt", metaDir & "\" & Me.ShortName & ".txt") = 0) Then
-            log("OK, got gamelist")
+            log(vbTab & vbTab & "OK, got gamelist")
         Else
-            log("ERROR while getting gamelist")
+            log(vbTab & vbTab & "ERROR while getting gamelist")
 
             Return -2
         End If
@@ -81,8 +119,10 @@
         Dim reader As Global.System.IO.StreamReader
         Dim split As String()
 
+        log("Reading metadata files for " & Me.Name & "...")
+
         ' read hashlist file into hashes
-        log("reading hashlist...")
+        log(vbTab & "reading hashlist...")
 
         ' read whole file
         reader = My.Computer.FileSystem.OpenTextFileReader(metaDir & "\" & Me.ShortName & ".json", Text.Encoding.UTF8)
@@ -102,11 +142,11 @@
             hashes.Add(New Hash(split(0).Replace("""", ""), split(1)))
         Next
 
-        log("OK, got " & hashes.Count() & " hashes")
+        log(vbTab & vbTab & "OK, got " & hashes.Count() & " hashes")
 
 
         ' read gamelist file into Gamelist
-        log("reading gamelist...")
+        log(vbTab & "reading gamelist...")
 
         Dim line As String
         Dim game As Game
@@ -135,6 +175,64 @@
 
         reader.Close()
 
-        log("OK, got " & Me.Gamelist.Count() & " games")
+        log(vbTab & vbTab & "OK, got " & Me.Gamelist.Count() & " games")
+    End Sub
+
+    Public Sub checkFilesForCheevos(path As String, tempDir As String)
+        log("Checking ROMs in " & path)
+
+        Dim fileExt As String
+        Dim fileMD5 As String
+        ' TODO add 7z
+        Dim archiveExt As String() = {"*.zip"}
+
+        ' list all files with SYSTEM and ARCHIVE extensions
+        Dim files = My.Computer.FileSystem.GetFiles(path, FileIO.SearchOption.SearchAllSubDirectories, Me.Extensionlist.Concat(archiveExt).ToArray)
+        ' TODO sort files alphabetically
+
+        For Each file In My.Computer.FileSystem.GetFiles(path, FileIO.SearchOption.SearchAllSubDirectories, Me.Extensionlist.Concat(archiveExt).ToArray)
+            fileExt = System.IO.Path.GetExtension(file).Replace(".", "*.")
+
+            If (archiveExt.Contains(fileExt)) Then
+                ' for each ARCHIVE in files...
+                log(vbTab & "found ARCHIVE """ & file & """")
+
+                log(vbTab & vbTab & "extracting archive...")
+                extractArchive(file, tempDir)
+
+                For Each extractedFile In My.Computer.FileSystem.GetFiles(tempDir, FileIO.SearchOption.SearchAllSubDirectories, Me.Extensionlist)
+                    log(vbTab & vbTab & "found ROM """ & extractedFile & """")
+
+                    fileMD5 = getMD5(extractedFile).ToLower
+                    log(vbTab & vbTab & vbTab & "MD5 Hash: " & fileMD5)
+
+                    Dim query = From game As Game In Gamelist Where game.Hashes.Contains(fileMD5) Select game
+                    If query.Count = 1 Then
+                        log(vbTab & vbTab & vbTab & "found entry: " & query(0).Name)
+                        Me.GamesWithCheevos.Add(file)
+                    Else
+                        log(vbTab & vbTab & vbTab & "no entry found")
+                        Me.GamesWithoutCheevos.Add(file)
+                    End If
+                Next
+
+                tidyUp(tempDir)
+            Else
+                ' for each ROM in files...
+                log(vbTab & "found ROM """ & file & """")
+
+                fileMD5 = getMD5(file).ToLower
+                log(vbTab & vbTab & "MD5 Hash: " & fileMD5)
+
+                Dim query = From game As Game In Gamelist Where game.Hashes.Contains(fileMD5) Select game
+                If query.Count = 1 Then
+                    log(vbTab & vbTab & "found entry: " & query(0).Name)
+                    Me.GamesWithCheevos.Add(file)
+                Else
+                    log(vbTab & vbTab & "no entry found")
+                    Me.GamesWithoutCheevos.Add(file)
+                End If
+            End If
+        Next
     End Sub
 End Class
