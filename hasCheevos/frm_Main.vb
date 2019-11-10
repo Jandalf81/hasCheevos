@@ -56,6 +56,8 @@ Public Class frm_Main
         selectedSystem.readMetadata(metaDir)
 
         selectedSystem.checkFilesForCheevos(txt_PathToCheck.Text, tempDir)
+
+        selectedSystem.writePlaylist(tempDir & "\hasCheevos_" & selectedSystem.ShortName & ".lpl")
     End Sub
 #End Region
 

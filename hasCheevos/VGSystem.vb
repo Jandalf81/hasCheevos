@@ -1,4 +1,6 @@
-﻿Public Class VGSystem
+﻿Imports System.Text.RegularExpressions
+
+Public Class VGSystem
     Private _Name As String
     Private _ShortName As String
     Private _Index As Integer
@@ -209,7 +211,7 @@
                     Dim query = From game As Game In Gamelist Where game.Hashes.Contains(fileMD5) Select game
                     If query.Count = 1 Then
                         log(vbTab & vbTab & vbTab & "found entry: " & query(0).Name)
-                        Me.GamesWithCheevos.Add(file)
+                        Me.GamesWithCheevos.Add(file & "#" & System.IO.Path.GetFileName(extractedFile))
                     Else
                         log(vbTab & vbTab & vbTab & "no entry found")
                         Me.GamesWithoutCheevos.Add(file)
@@ -234,5 +236,42 @@
                 End If
             End If
         Next
+    End Sub
+
+    Public Sub writePlaylist(toFile As String)
+        Dim content As String
+
+        ' start of file
+        content = "{" & vbCrLf &
+            vbTab & """version"": ""1.0""," & vbCrLf &
+            vbTab & """items"": [" & vbCrLf
+
+        ' for each item...
+        For Each item In GamesWithCheevos
+            content += vbTab & vbTab & "{" & vbCrLf &
+                vbTab & vbTab & vbTab & """path"": """ & item.Replace("\", "\\") & """," & vbCrLf &
+                vbTab & vbTab & vbTab & """label"": """ & System.IO.Path.GetFileNameWithoutExtension(item.Split("#")(0)) & """," & vbCrLf &
+                vbTab & vbTab & vbTab & """core_path"": ""DETECT""," & vbCrLf &
+                vbTab & vbTab & vbTab & """core_name"": ""DETECT""," & vbCrLf &
+                vbTab & vbTab & vbTab & """crc32"": ""DETECT""," & vbCrLf &
+                vbTab & vbTab & vbTab & """db_name"": """ & System.IO.Path.GetFileName(toFile) & """" & vbCrLf &
+                vbTab & vbTab & "}," & vbCrLf
+        Next
+
+        ' clean last entry
+        content = Regex.Replace(content, "},\r\n$", "}" & vbCrLf, RegexOptions.IgnoreCase)
+
+        ' end of file
+        content += vbTab & "]" & vbCrLf &
+            "}"
+
+        ' write content to file
+        Dim file As System.IO.StreamWriter
+
+        file = My.Computer.FileSystem.OpenTextFileWriter(toFile, False)
+        file.Write(content)
+
+        file.Close()
+        file.Dispose()
     End Sub
 End Class

@@ -1,4 +1,5 @@
-﻿Imports System.IO.Compression
+﻿Imports System.IO
+Imports System.IO.Compression
 
 Module _functions
     Public Function download(url As String, toFile As String) As Integer
@@ -73,6 +74,47 @@ finish:
         End Using
 
         Return sb.ToString
+    End Function
+
+    Public Function getCRC32(file As String) As String
+        Try
+            Dim FS As FileStream = New FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, 8192)
+            Dim CRC32Result As Integer = &HFFFFFFFF
+            Dim Buffer(4096) As Byte
+            Dim ReadSize As Integer = 4096
+            Dim Count As Integer = FS.Read(Buffer, 0, ReadSize)
+            Dim CRC32Table(256) As Integer
+            Dim DWPolynomial As Integer = &HEDB88320
+            Dim DWCRC As Integer
+            Dim i As Integer, j As Integer, n As Integer
+
+            'CRC32 Tabelle erstellen
+            For i = 0 To 255
+                DWCRC = i
+                For j = 8 To 1 Step -1
+                    If (DWCRC And 1) Then
+                        DWCRC = ((DWCRC And &HFFFFFFFE) \ 2&) And &H7FFFFFFF
+                        DWCRC = DWCRC Xor DWPolynomial
+                    Else
+                        DWCRC = ((DWCRC And &HFFFFFFFE) \ 2&) And &H7FFFFFFF
+                    End If
+                Next j
+                CRC32Table(i) = DWCRC
+            Next i
+
+            'CRC32 Hash berechnen
+            Do While (Count > 0)
+                For i = 0 To Count - 1
+                    n = (CRC32Result And &HFF) Xor Buffer(i)
+                    CRC32Result = ((CRC32Result And &HFFFFFF00) \ &H100) And &HFFFFFF
+                    CRC32Result = CRC32Result Xor CRC32Table(n)
+                Next i
+                Count = FS.Read(Buffer, 0, ReadSize)
+            Loop
+            Return Hex(Not (CRC32Result))
+        Catch ex As Exception
+            Return ""
+        End Try
     End Function
 
     Public Sub extractArchive(file As String, toDir As String)
