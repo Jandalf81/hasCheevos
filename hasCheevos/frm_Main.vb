@@ -1,10 +1,22 @@
 ﻿Public Class frm_Main
-    Private ConsoleList As New List(Of Console)
+    Private SystemList As New List(Of VGSystem)
+    Private selectedSystem As VGSystem
 
-    Dim metaDir As String = My.Application.Info.DirectoryPath & "\meta"
-    Dim tempDir As String = My.Application.Info.DirectoryPath & "\temp"
-    Dim siteURL As String = "https://retroachievements.org"
-    Dim githubURL As String = "https://raw.githubusercontent.com/meleu/hascheevos/master/data"
+    Private metaDir As String = My.Application.Info.DirectoryPath & "\meta"
+    Private tempDir As String = My.Application.Info.DirectoryPath & "\temp"
+
+    Private siteURL As String = "https://retroachievements.org"
+    Private githubURL As String = "https://raw.githubusercontent.com/meleu/hascheevos/master/data"
+
+    Private Sub frm_Main_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        ' prepare Directories within app directory
+        prepareDirectories()
+
+        ' fill DropDown list of Systems
+        initSystemList()
+        cmb_System.DisplayMember = "Name"
+        cmb_System.DataSource = SystemList
+    End Sub
 
 #Region "GUI elements"
     Private Sub btnPathToCheck_Click(sender As Object, e As EventArgs) Handles btnPathToCheck.Click
@@ -19,19 +31,23 @@
         End If
     End Sub
 
+    Private Sub cmb_System_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmb_System.SelectedIndexChanged
+        selectedSystem = cmb_System.SelectedItem
+    End Sub
+
     Private Sub btn_ScanNow_Click(sender As Object, e As EventArgs) Handles btn_ScanNow.Click
-        refreshMetadata(cmb_PathContains.SelectedItem)
-        scanROMFiles(txt_PathToCheck.Text, cmb_PathContains.SelectedItem)
+        selectedSystem.refreshMetadata(siteURL, githubURL, metaDir)
+        selectedSystem.readMetadata(metaDir)
     End Sub
 #End Region
 
 #Region "Functions"
-    Private Sub initConsoleList()
-        With ConsoleList
-            .Add(New Console("Sega Mega Drive", "megadrive", 1, {"md"}))
-            .Add(New Console("Nintendo N64", "n64", 2, {"n64", "v64"}))
-            .Add(New Console("Nintendo SuperNES", "snes", 3, {"sfc", "smc"}))
-            .Add(New Console("Nintendo GameBoy", "gb", 4, {"gb"}))
+    Private Sub initSystemList()
+        With SystemList
+            .Add(New VGSystem("Sega Mega Drive", "megadrive", 1, {"md"}))
+            .Add(New VGSystem("Nintendo N64", "n64", 2, {"n64", "v64"}))
+            .Add(New VGSystem("Nintendo SuperNES", "snes", 3, {"sfc", "smc"}))
+            .Add(New VGSystem("Nintendo GameBoy", "gb", 4, {"gb"}))
         End With
     End Sub
 
@@ -44,93 +60,5 @@
             My.Computer.FileSystem.CreateDirectory(tempDir)
         End If
     End Sub
-
-    Private Sub refreshMetadata(Console As Console)
-        log("Refreshing metadata files for " & Console.Name)
-
-        log("getting hashfile...")
-        If (download(siteURL & "/dorequest.php?r=hashlibrary&c=" & Console.Index, metaDir & "\" & Console.ShortName & ".json") = 0) Then
-            log("got hashfile")
-        Else
-            log("error while getting hashfile")
-        End If
-
-        log("getting gamelist...")
-        If (download(githubURL & "/" & Console.ShortName & "_hascheevos.txt", metaDir & "\" & Console.ShortName & ".txt") = 0) Then
-            log("got gamelist")
-        Else
-            log("error while getting gamelist")
-        End If
-    End Sub
-
-    Private Sub scanROMFiles(PathToCheck As String, Console As Console)
-        log("reading gamelist...")
-        Console.readGamelist(metaDir)
-        log("found " & Console.Gamelist.Count & " games")
-    End Sub
-
-    Private Sub log(entry As String)
-        txt_Log.AppendText(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") & vbTab & entry & vbCrLf)
-    End Sub
-
-    Public Function download(url As String, toFile As String) As Integer
-        Dim wc As Net.WebClient = New Net.WebClient()
-        wc.Encoding = System.Text.Encoding.UTF8
-
-        ' test security protocols
-        Try
-            wc.DownloadFile(url, toFile)
-
-            GoTo finish
-        Catch ex As Exception
-
-        End Try
-
-        Try
-            Net.ServicePointManager.SecurityProtocol = Net.SecurityProtocolType.Ssl3
-            wc.DownloadFile(url, toFile)
-
-            GoTo finish
-        Catch ex As Exception
-
-        End Try
-
-        Try
-            Net.ServicePointManager.SecurityProtocol = Net.SecurityProtocolType.Tls
-            wc.DownloadFile(url, toFile)
-
-            GoTo finish
-        Catch ex As Exception
-
-        End Try
-
-        Try
-            Net.ServicePointManager.SecurityProtocol = Net.SecurityProtocolType.Tls11
-            wc.DownloadFile(url, toFile)
-
-            GoTo finish
-        Catch ex As Exception
-
-        End Try
-
-        Try
-            Net.ServicePointManager.SecurityProtocol = Net.SecurityProtocolType.Tls12
-            wc.DownloadFile(url, toFile)
-
-            GoTo finish
-        Catch ex As Exception
-
-        End Try
-
-        Return -1
-finish:
-        Return 0
-    End Function
 #End Region
-
-    Private Sub frm_Main_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        initConsoleList()
-        cmb_PathContains.DisplayMember = "Name"
-        cmb_PathContains.DataSource = ConsoleList
-    End Sub
 End Class

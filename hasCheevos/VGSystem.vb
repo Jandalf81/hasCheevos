@@ -1,6 +1,4 @@
-﻿Imports HasCheevos
-
-Public Class Console
+﻿Public Class VGSystem
     Private _Name As String
     Private _ShortName As String
     Private _Index As Integer
@@ -55,14 +53,39 @@ Public Class Console
         Me.Extensionlist = extensionList
     End Sub
 
-    Public Sub readGamelist(tempDir As String)
-        Dim reader As System.IO.StreamReader
+    Public Function refreshMetadata(siteURL As String, githubURL As String, metaDir As String) As Integer
+        log("Refreshing metadata files for " & Me.Name)
+
+        log("getting hashfile...")
+        If (download(siteURL & "/dorequest.php?r=hashlibrary&c=" & Me.Index, metaDir & "\" & Me.ShortName & ".json") = 0) Then
+            log("OK, got hashfile")
+        Else
+            log("ERROR while getting hashfile")
+
+            Return -1
+        End If
+
+        log("getting gamelist...")
+        If (download(githubURL & "/" & Me.ShortName & "_hascheevos.txt", metaDir & "\" & Me.ShortName & ".txt") = 0) Then
+            log("OK, got gamelist")
+        Else
+            log("ERROR while getting gamelist")
+
+            Return -2
+        End If
+
+        Return 0
+    End Function
+
+    Public Sub readMetadata(metaDir As String)
+        Dim reader As Global.System.IO.StreamReader
         Dim split As String()
 
         ' read hashlist file into hashes
+        log("reading hashlist...")
 
         ' read whole file
-        reader = My.Computer.FileSystem.OpenTextFileReader(tempDir & "\" & Me.ShortName & ".json", System.Text.Encoding.UTF8)
+        reader = My.Computer.FileSystem.OpenTextFileReader(metaDir & "\" & Me.ShortName & ".json", Text.Encoding.UTF8)
         Dim jsonString As String = reader.ReadToEnd()
 
         ' clean variable
@@ -79,13 +102,17 @@ Public Class Console
             hashes.Add(New Hash(split(0).Replace("""", ""), split(1)))
         Next
 
+        log("OK, got " & hashes.Count() & " hashes")
+
 
         ' read gamelist file into Gamelist
+        log("reading gamelist...")
+
         Dim line As String
         Dim game As Game
         Dim gameHashes
 
-        reader = My.Computer.FileSystem.OpenTextFileReader(tempDir & "\" & Me.ShortName & ".txt", System.Text.Encoding.UTF8)
+        reader = My.Computer.FileSystem.OpenTextFileReader(metaDir & "\" & Me.ShortName & ".txt", Text.Encoding.UTF8)
 
         Do
             line = reader.ReadLine()
@@ -107,5 +134,7 @@ Public Class Console
         Loop
 
         reader.Close()
+
+        log("OK, got " & Me.Gamelist.Count() & " games")
     End Sub
 End Class

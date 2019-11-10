@@ -1,9 +1,9 @@
 ﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()> _
 Partial Class frm_Main
-    Inherits System.Windows.Forms.Form
+    Inherits Global.System.Windows.Forms.Form
 
     'Das Formular überschreibt den Löschvorgang, um die Komponentenliste zu bereinigen.
-    <System.Diagnostics.DebuggerNonUserCode()> _
+    <Global.System.Diagnostics.DebuggerNonUserCode()> _
     Protected Overrides Sub Dispose(ByVal disposing As Boolean)
         Try
             If disposing AndAlso components IsNot Nothing Then
@@ -15,18 +15,18 @@ Partial Class frm_Main
     End Sub
 
     'Wird vom Windows Form-Designer benötigt.
-    Private components As System.ComponentModel.IContainer
+    Private components As Global.System.ComponentModel.IContainer
 
     'Hinweis: Die folgende Prozedur ist für den Windows Form-Designer erforderlich.
     'Das Bearbeiten ist mit dem Windows Form-Designer möglich.  
     'Das Bearbeiten mit dem Code-Editor ist nicht möglich.
-    <System.Diagnostics.DebuggerStepThrough()> _
+    <Global.System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
         Me.lbl_PathToCheck = New System.Windows.Forms.Label()
         Me.txt_PathToCheck = New System.Windows.Forms.TextBox()
         Me.btnPathToCheck = New System.Windows.Forms.Button()
         Me.lbl_PathContains = New System.Windows.Forms.Label()
-        Me.cmb_PathContains = New System.Windows.Forms.ComboBox()
+        Me.cmb_System = New System.Windows.Forms.ComboBox()
         Me.btn_ScanNow = New System.Windows.Forms.Button()
         Me.txt_Log = New System.Windows.Forms.TextBox()
         Me.SuspendLayout()
@@ -69,16 +69,16 @@ Partial Class frm_Main
         Me.lbl_PathContains.TabIndex = 3
         Me.lbl_PathContains.Text = "Path contains ROM files for"
         '
-        'cmb_PathContains
+        'cmb_System
         '
-        Me.cmb_PathContains.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
+        Me.cmb_System.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.cmb_PathContains.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.cmb_PathContains.FormattingEnabled = True
-        Me.cmb_PathContains.Location = New System.Drawing.Point(167, 36)
-        Me.cmb_PathContains.Name = "cmb_PathContains"
-        Me.cmb_PathContains.Size = New System.Drawing.Size(341, 21)
-        Me.cmb_PathContains.TabIndex = 4
+        Me.cmb_System.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.cmb_System.FormattingEnabled = True
+        Me.cmb_System.Location = New System.Drawing.Point(167, 36)
+        Me.cmb_System.Name = "cmb_System"
+        Me.cmb_System.Size = New System.Drawing.Size(341, 21)
+        Me.cmb_System.TabIndex = 4
         '
         'btn_ScanNow
         '
@@ -109,7 +109,7 @@ Partial Class frm_Main
         Me.ClientSize = New System.Drawing.Size(520, 385)
         Me.Controls.Add(Me.txt_Log)
         Me.Controls.Add(Me.btn_ScanNow)
-        Me.Controls.Add(Me.cmb_PathContains)
+        Me.Controls.Add(Me.cmb_System)
         Me.Controls.Add(Me.lbl_PathContains)
         Me.Controls.Add(Me.btnPathToCheck)
         Me.Controls.Add(Me.txt_PathToCheck)
@@ -125,7 +125,7 @@ Partial Class frm_Main
     Friend WithEvents txt_PathToCheck As TextBox
     Friend WithEvents btnPathToCheck As Button
     Friend WithEvents lbl_PathContains As Label
-    Friend WithEvents cmb_PathContains As ComboBox
+    Friend WithEvents cmb_System As ComboBox
     Friend WithEvents btn_ScanNow As Button
     Friend WithEvents txt_Log As TextBox
 End Class
