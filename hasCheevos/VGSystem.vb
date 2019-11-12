@@ -181,7 +181,12 @@ Public Class VGSystem
     End Sub
 
     Public Sub checkFilesForCheevos(path As String, tempDir As String)
+        Dim allFiles As Integer = 0
+        Dim scannedFiles As Integer = 0
+        Dim ROMsWithCheevos As Integer = 0
+
         log("Checking ROMs in " & path)
+        setStatus("Scanning...")
 
         Dim fileExt As String
         Dim fileMD5 As String
@@ -191,8 +196,12 @@ Public Class VGSystem
         ' list all files with SYSTEM and ARCHIVE extensions
         Dim files = My.Computer.FileSystem.GetFiles(path, FileIO.SearchOption.SearchAllSubDirectories, Me.Extensionlist.Concat(archiveExt).ToArray)
         ' TODO sort files alphabetically
+        files.ToList.Sort()
+        allFiles = files.Count()
 
-        For Each file In My.Computer.FileSystem.GetFiles(path, FileIO.SearchOption.SearchAllSubDirectories, Me.Extensionlist.Concat(archiveExt).ToArray)
+        setScannedFiles(scannedFiles & " / " & allFiles)
+
+        For Each file In files
             fileExt = System.IO.Path.GetExtension(file).Replace(".", "*.")
 
             If (archiveExt.Contains(fileExt)) Then
@@ -211,7 +220,10 @@ Public Class VGSystem
                     Dim query = From game As Game In Gamelist Where game.Hashes.Contains(fileMD5) Select game
                     If query.Count = 1 Then
                         log(vbTab & vbTab & vbTab & "found entry: " & query(0).Name)
+
                         Me.GamesWithCheevos.Add(file & "#" & System.IO.Path.GetFileName(extractedFile))
+                        ROMsWithCheevos += 1
+                        setROMsWithCheevos(ROMsWithCheevos)
                     Else
                         log(vbTab & vbTab & vbTab & "no entry found")
                         Me.GamesWithoutCheevos.Add(file)
@@ -229,49 +241,67 @@ Public Class VGSystem
                 Dim query = From game As Game In Gamelist Where game.Hashes.Contains(fileMD5) Select game
                 If query.Count = 1 Then
                     log(vbTab & vbTab & "found entry: " & query(0).Name)
+
                     Me.GamesWithCheevos.Add(file)
+                    ROMsWithCheevos += 1
+                    setROMsWithCheevos(ROMsWithCheevos)
                 Else
                     log(vbTab & vbTab & "no entry found")
                     Me.GamesWithoutCheevos.Add(file)
                 End If
             End If
-        Next
-    End Sub
 
-    Public Sub writePlaylist(toFile As String)
-        Dim content As String
+            scannedFiles += 1
+            setScannedFiles(scannedFiles & " / " & allFiles)
 
-        ' start of file
-        content = "{" & vbCrLf &
-            vbTab & """version"": ""1.0""," & vbCrLf &
-            vbTab & """items"": [" & vbCrLf
-
-        ' for each item...
-        For Each item In GamesWithCheevos
-            content += vbTab & vbTab & "{" & vbCrLf &
-                vbTab & vbTab & vbTab & """path"": """ & item.Replace("\", "\\") & """," & vbCrLf &
-                vbTab & vbTab & vbTab & """label"": """ & System.IO.Path.GetFileNameWithoutExtension(item.Split("#")(0)) & """," & vbCrLf &
-                vbTab & vbTab & vbTab & """core_path"": ""DETECT""," & vbCrLf &
-                vbTab & vbTab & vbTab & """core_name"": ""DETECT""," & vbCrLf &
-                vbTab & vbTab & vbTab & """crc32"": ""DETECT""," & vbCrLf &
-                vbTab & vbTab & vbTab & """db_name"": """ & System.IO.Path.GetFileName(toFile) & """" & vbCrLf &
-                vbTab & vbTab & "}," & vbCrLf
+            Application.DoEvents()
         Next
 
-        ' clean last entry
-        content = Regex.Replace(content, "},\r\n$", "}" & vbCrLf, RegexOptions.IgnoreCase)
-
-        ' end of file
-        content += vbTab & "]" & vbCrLf &
-            "}"
-
-        ' write content to file
-        Dim file As System.IO.StreamWriter
-
-        file = My.Computer.FileSystem.OpenTextFileWriter(toFile, False)
-        file.Write(content)
-
-        file.Close()
-        file.Dispose()
+        setStatus("Finished")
     End Sub
+
+    Public Function checkFileForCheevos(file As String, tempDir As String, archiveExt As String()) As List(Of ScanResult)
+        Dim retList As New List(Of ScanResult)
+
+        Dim fileExt As String
+        ' TODO add 7z
+        'Dim archiveExt As String() = {"*.zip"}
+
+        fileExt = System.IO.Path.GetExtension(file).Replace(".", "*.")
+
+        If (archiveExt.Contains(fileExt)) Then
+            ' for each ARCHIVE in files...
+
+            extractArchive(file, tempDir)
+
+            For Each extractedFile In My.Computer.FileSystem.GetFiles(tempDir, FileIO.SearchOption.SearchAllSubDirectories, Me.Extensionlist)
+                Dim retVal As New ScanResult(file, System.IO.Path.GetFileName(extractedFile))
+
+                retVal.MD5 = getMD5(extractedFile).ToLower
+
+                Dim query = From game As Game In Gamelist Where game.Hashes.Contains(retVal.MD5) Select game
+                If query.Count = 1 Then
+                    retVal.Name = query(0).Name
+                    retVal.HasCheevos = True
+                End If
+
+                retList.Add(retVal)
+            Next
+
+            tidyUp(tempDir)
+        Else
+            Dim retVal As New ScanResult(file)
+            retVal.MD5 = getMD5(file).ToLower
+
+            Dim query = From game As Game In Gamelist Where game.Hashes.Contains(retVal.MD5) Select game
+            If query.Count = 1 Then
+                retVal.Name = query(0).Name
+                retVal.HasCheevos = True
+            End If
+
+            retList.Add(retVal)
+        End If
+
+        Return retList
+    End Function
 End Class

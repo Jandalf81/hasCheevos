@@ -73,6 +73,8 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ScanResult.vb" />
+    <Compile Include="ScanResults.vb" />
     <Compile Include="VGSystem.vb" />
     <Compile Include="frm_Main.vb">
       <SubType>Form</SubType>

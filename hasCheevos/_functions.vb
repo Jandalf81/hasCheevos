@@ -60,6 +60,18 @@ finish:
         frm_Main.txt_Log.AppendText(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") & vbTab & entry & vbCrLf)
     End Sub
 
+    Public Sub setStatus(status As String)
+        frm_Main.tssl_Status.Text = "Status: " & status
+    End Sub
+
+    Public Sub setScannedFiles(scannedFiles As String)
+        frm_Main.tssl_ScannedFiles.Text = "Scanned Files: " & scannedFiles
+    End Sub
+
+    Public Sub setROMsWithCheevos(ROMswithCheevos As Integer)
+        frm_Main.tssl_ROMsWithCheevos.Text = "ROMs with Cheevos: " & ROMswithCheevos
+    End Sub
+
     Public Function getMD5(path As String) As String
         Dim md5 = System.Security.Cryptography.MD5.Create
         Dim hash As Byte()
