@@ -154,6 +154,10 @@ Public Class VGSystem
         Dim game As Game
         Dim gameHashes
 
+        Dim id As String
+        Dim hasCheevos As String
+        Dim name As String
+
         reader = My.Computer.FileSystem.OpenTextFileReader(metaDir & "\" & Me.ShortName & ".txt", Text.Encoding.UTF8)
 
         Do
@@ -161,11 +165,21 @@ Public Class VGSystem
 
             If line Is Nothing Then Exit Do
 
+            name = ""
+
             split = line.Split(":")
-            game = New Game(split(2).Replace("""", ""), split(0), split(1))
+
+            id = split(0)
+            hasCheevos = split(1)
+            For i As Integer = 2 To split.Count - 1
+                name += split(i) + ":"
+            Next
+            name = name.Substring(0, Len(name) - 1)
+
+            game = New Game(name.Replace("""", ""), id, hasCheevos)
 
             ' get hashes from list hashes()
-            gameHashes = From hash In hashes Where hash.GameID = split(0)
+            gameHashes = From hash In hashes Where hash.GameID = id
 
             ' save found hashes in game
             For Each gameHash In gameHashes

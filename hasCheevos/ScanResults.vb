@@ -16,14 +16,16 @@ Public Class ScanResults
 
         ' for each item...
         For Each item In scanResults
-            content += vbTab & vbTab & "{" & vbCrLf &
+            If item.HasCheevos = True Then
+                content += vbTab & vbTab & "{" & vbCrLf &
                 vbTab & vbTab & vbTab & """path"": """ & item.File.Replace("\", "\\") & """," & vbCrLf &
-                vbTab & vbTab & vbTab & """label"": """ & System.IO.Path.GetFileNameWithoutExtension(item.Name) & """," & vbCrLf &
+                vbTab & vbTab & vbTab & """label"": """ & item.Name & """," & vbCrLf &
                 vbTab & vbTab & vbTab & """core_path"": ""DETECT""," & vbCrLf &
                 vbTab & vbTab & vbTab & """core_name"": ""DETECT""," & vbCrLf &
                 vbTab & vbTab & vbTab & """crc32"": ""DETECT""," & vbCrLf &
                 vbTab & vbTab & vbTab & """db_name"": """ & System.IO.Path.GetFileName(toFile) & """" & vbCrLf &
                 vbTab & vbTab & "}," & vbCrLf
+            End If
         Next
 
         ' clean last entry
